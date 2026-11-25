@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { Activity, ArrowDownRight, ArrowRight, ArrowUpRight, BarChart3, BookOpen, Check, CheckCircle2, ChevronDown, ChevronRight, CircleHelp, Clock3, ExternalLink, FlaskConical, LayoutDashboard, MessageSquare, Play, RotateCcw, Search, ShieldCheck, Sparkles, ThumbsDown, ThumbsUp, X, XCircle, Zap } from 'lucide-react';
+import { Activity, ArrowDownRight, ArrowRight, ArrowUpRight, BarChart3, BookOpen, Check, CheckCircle2, ChevronDown, ChevronRight, CircleHelp, Clock3, ExternalLink, FlaskConical, LayoutDashboard, MessageSquare, Moon, Play, RotateCcw, Search, ShieldCheck, Sparkles, Sun, ThumbsDown, ThumbsUp, X, XCircle, Zap } from 'lucide-react';
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { cases, feedback } from './data';
 import { evaluateCase, loadRuns, passRate, runEvaluation, seedRuns, STORAGE_KEY } from './evaluation';
@@ -12,6 +12,11 @@ const dateLabel = date => new Date(date).toLocaleDateString('en-US', { month: 's
 const percent = (part, total) => total ? Math.round(part / total * 100) : 0;
 
 function App() {
+  // The theme is independent of evaluation data and survives page reloads.
+  const [darkMode, setDarkMode] = useState(() => {
+    try { return localStorage.getItem('agenteval-theme') === 'dark'; }
+    catch { return false; } // The dashboard still works if storage is blocked.
+  });
   const [page, setPage] = useState('overview');
   const [runs, setRuns] = useState(loadRuns);
   const [period, setPeriod] = useState('30');
@@ -35,6 +40,13 @@ function App() {
   });
   const visibleFeedback = feedback.filter(item => filter === 'All' || item.sentiment === filter.toLowerCase());
 
+  function toggleTheme() {
+    const next = !darkMode;
+    setDarkMode(next);
+    try { localStorage.setItem('agenteval-theme', next ? 'dark' : 'light'); }
+    catch { /* Keep the selection for this session if storage is unavailable. */ }
+  }
+
   function saveRuns(next) {
     setRuns(next);
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); }
@@ -48,7 +60,7 @@ function App() {
   function changePage(next) { setPage(next); setSearch(''); setFilter('All'); setNotice(''); }
   function resetDemo() { saveRuns(seedRuns); setNotice('Demo run history restored.'); }
 
-  return <div className="app-shell">
+  return <div className={`app-shell ${darkMode ? 'theme-dark' : ''}`}>
     <aside className="sidebar">
       <div className="brand"><div className="brand-mark"><Activity size={21} strokeWidth={2.5}/></div><div><strong>AgentEval</strong><span>Evaluation workspace</span></div></div>
       <div className="side-label">WORKSPACE</div>
@@ -58,7 +70,7 @@ function App() {
       <div className="sidebar-bottom"><div className="demo-card"><div className="demo-icon"><Sparkles size={16}/></div><strong>Exploring the demo?</strong><p>Sample data is ready to explore. No API key needed.</p><a href="https://github.com/RhugvedWaydande/agent-eval-dashboard" target="_blank" rel="noreferrer">View project <ArrowRight size={14}/></a></div><div className="side-foot"><span className="avatar">R</span><div><strong>Evaluation workspace</strong><small>Demo environment</small></div><ChevronDown size={15}/></div></div>
     </aside>
     <main className="main">
-      <header className="topbar"><div className="breadcrumbs"><span>Workspace</span><ChevronRight size={14}/><strong>{nav.find(item => item.id === page)?.label}</strong></div><div className="top-actions"><span className="demo-pill"><span/> Demo mode</span><a href="https://github.com/RhugvedWaydande/agent-eval-dashboard" target="_blank" rel="noreferrer" aria-label="View documentation"><CircleHelp size={19}/></a><span className="avatar top-avatar">R</span></div></header>
+      <header className="topbar"><div className="breadcrumbs"><span>Workspace</span><ChevronRight size={14}/><strong>{nav.find(item => item.id === page)?.label}</strong></div><div className="top-actions"><button className="theme-toggle" type="button" onClick={toggleTheme} aria-pressed={darkMode} aria-label="Dark mode" title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}>{darkMode ? <Sun size={16}/> : <Moon size={16}/>}<span>{darkMode ? 'Light mode' : 'Dark mode'}</span></button><span className="demo-pill"><span/> Demo mode</span><a href="https://github.com/RhugvedWaydande/agent-eval-dashboard" target="_blank" rel="noreferrer" aria-label="View documentation"><CircleHelp size={19}/></a><span className="avatar top-avatar">R</span></div></header>
       <div className="content">
         <div className="page-heading"><div><div className="eyebrow"><span className="eyebrow-dot"/> AGENT QUALITY, AT A GLANCE</div><h1>{page === 'overview' ? 'Evaluation overview' : page === 'tests' ? 'Test cases' : 'User feedback'}</h1><p>{page === 'overview' ? 'A clear view of how your agent is performing.' : page === 'tests' ? 'Explore the checks behind your agent’s evaluation.' : 'See what users are saying about their experience.'}</p></div><button className="primary-button" onClick={runSuite}><Play size={15} fill="currentColor"/> Run evaluation</button></div>
         {notice && <div className="notice" role="status"><CheckCircle2 size={16}/>{notice}<button onClick={() => setNotice('')} aria-label="Dismiss notification"><X size={15}/></button></div>}
@@ -71,7 +83,7 @@ function App() {
             <Metric icon={ThumbsUp} tone="green" label="Positive feedback" value={`${percent(positive, feedback.length)}%`} note={`${positive} positive`} sub={`of ${feedback.length} responses`} />
             <Metric icon={Clock3} tone="orange" label="Avg. response time" value={`${(cases.reduce((sum, item) => sum + item.duration, 0) / cases.length).toFixed(1)}s`} note="Sample" sub="fixture timings" />
           </div>
-          <div className="dashboard-grid"><section className="card chart-card"><div className="card-heading"><div><h2>Pass rate over time</h2><p>Track evaluation results across runs</p></div><label className="select-wrap"><span className="sr-only">Trend time range</span><select value={period} onChange={e => setPeriod(e.target.value)}><option value="7">Last 7 days</option><option value="30">Last 30 days</option><option value="90">Last 90 days</option></select><ChevronDown size={14}/></label></div><div className="chart-summary"><strong>{passRate(latest)}%</strong><span className={`change ${delta < 0 ? 'negative' : ''}`}>{delta >= 0 ? <ArrowUpRight size={14}/> : <ArrowDownRight size={14}/>} {delta >= 0 ? '+' : ''}{delta} pts</span><span>vs. previous run</span></div><div className="chart-container">{chartData.length ? <ResponsiveContainer width="100%" height="100%"><AreaChart data={chartData} margin={{ top: 15, right: 8, left: -25, bottom: 0 }}><defs><linearGradient id="chartFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#7864e8" stopOpacity={0.20}/><stop offset="100%" stopColor="#7864e8" stopOpacity={0.01}/></linearGradient></defs><CartesianGrid stroke="#edf0f5" vertical={false}/><XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fill: '#9aa1b2', fontSize: 11 }} dy={10}/><YAxis domain={[0, 100]} ticks={[0,25,50,75,100]} tickFormatter={v => `${v}%`} axisLine={false} tickLine={false} tick={{ fill: '#9aa1b2', fontSize: 11 }}/><Tooltip formatter={v => [`${v}%`, 'Pass rate']} contentStyle={{ border: '1px solid #eaecf2', borderRadius: 10, fontSize: 12 }}/><Area type="monotone" dataKey="rate" stroke="#7761e8" strokeWidth={2.5} fill="url(#chartFill)" dot={{ r: 3, fill: '#7761e8', strokeWidth: 2, stroke: 'white' }} activeDot={{ r: 5 }}/></AreaChart></ResponsiveContainer> : <div className="empty">No runs in this period.</div>}</div><div className="chart-foot"><span><i/> Pass rate</span><span>{chartData.length} runs in selected period</span></div></section>
+          <div className="dashboard-grid"><section className="card chart-card"><div className="card-heading"><div><h2>Pass rate over time</h2><p>Track evaluation results across runs</p></div><label className="select-wrap"><span className="sr-only">Trend time range</span><select value={period} onChange={e => setPeriod(e.target.value)}><option value="7">Last 7 days</option><option value="30">Last 30 days</option><option value="90">Last 90 days</option></select><ChevronDown size={14}/></label></div><div className="chart-summary"><strong>{passRate(latest)}%</strong><span className={`change ${delta < 0 ? 'negative' : ''}`}>{delta >= 0 ? <ArrowUpRight size={14}/> : <ArrowDownRight size={14}/>} {delta >= 0 ? '+' : ''}{delta} pts</span><span>vs. previous run</span></div><div className="chart-container">{chartData.length ? <ResponsiveContainer width="100%" height="100%"><AreaChart data={chartData} margin={{ top: 15, right: 8, left: -25, bottom: 0 }}><defs><linearGradient id="chartFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#7864e8" stopOpacity={0.20}/><stop offset="100%" stopColor="#7864e8" stopOpacity={0.01}/></linearGradient></defs><CartesianGrid stroke={darkMode ? "#34384b" : "#edf0f5"} vertical={false}/><XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fill: '#9aa1b2', fontSize: 11 }} dy={10}/><YAxis domain={[0, 100]} ticks={[0,25,50,75,100]} tickFormatter={v => `${v}%`} axisLine={false} tickLine={false} tick={{ fill: '#9aa1b2', fontSize: 11 }}/><Tooltip formatter={v => [`${v}%`, 'Pass rate']} contentStyle={{ background: darkMode ? '#25283a' : '#fff', color: darkMode ? '#f0effa' : '#252a3b', border: `1px solid ${darkMode ? '#44485d' : '#eaecf2'}`, borderRadius: 10, fontSize: 12 }}/><Area type="monotone" dataKey="rate" stroke="#7761e8" strokeWidth={2.5} fill="url(#chartFill)" dot={{ r: 3, fill: '#7761e8', strokeWidth: 2, stroke: darkMode ? '#202334' : 'white' }} activeDot={{ r: 5 }}/></AreaChart></ResponsiveContainer> : <div className="empty">No runs in this period.</div>}</div><div className="chart-foot"><span><i/> Pass rate</span><span>{chartData.length} runs in selected period</span></div></section>
           <section className="card breakdown-card"><div className="card-heading"><div><h2>Evaluation breakdown</h2><p>Results from your latest run</p></div><button className="icon-button" onClick={() => changePage('tests')} aria-label="View test cases"><ArrowRight size={17}/></button></div><div className="donut-wrap"><div className="donut" style={{background: `conic-gradient(#7865e9 0 ${passRate(latest)}%, #f0a17a ${passRate(latest)}% 100%)`}}><div><strong>{latest?.results.length || 0}</strong><span>test cases</span></div></div></div><div className="breakdown-legend"><div><span><i className="legend-dot purple-dot"/> Passed</span><strong>{passed} <small>({percent(passed, latest?.results.length)}%)</small></strong></div><div><span><i className="legend-dot orange-dot"/> Failed</span><strong>{failed} <small>({percent(failed, latest?.results.length)}%)</small></strong></div></div></section></div>
           <div className="lower-grid"><section className="card table-card"><div className="card-heading"><div><h2>Recent test cases</h2><p>A closer look at your latest results</p></div><button className="text-link" onClick={() => changePage('tests')}>View all <ArrowRight size={14}/></button></div><CaseTable items={cases.slice(0, 4)} latest={latest} onSelect={setSelected}/></section><section className="card feedback-card"><div className="card-heading"><div><h2>Recent feedback</h2><p>Sample feedback from users</p></div><button className="text-link" onClick={() => changePage('feedback')}>View all <ArrowRight size={14}/></button></div><FeedbackList items={feedback.slice(0, 3)}/></section></div>
         </>}

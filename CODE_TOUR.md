@@ -5,7 +5,7 @@ This project is a React single-page application built with Vite. There is no ser
 ## Start here
 
 1. `index.html` provides the root element and loads `src/main.jsx`.
-2. `src/main.jsx` renders the sidebar, overview, test suite, feedback inbox, and test detail dialog. React state controls navigation, filters, and the current run history. The chart uses Recharts; icons come from Lucide.
+2. `src/main.jsx` renders the sidebar, overview, test suite, feedback inbox, and test detail dialog. React state controls navigation, filters, the current run history, and the light/dark theme. The theme button stores its preference separately in localStorage. The chart uses Recharts; icons come from Lucide.
 3. `src/data.js` contains clearly fictional test cases, sample responses, required phrases, response times, and feedback. Each test has a stable ID used to connect a result to its case.
 4. `src/evaluation.js` contains the evaluator and storage helpers. `evaluateCase` performs case-insensitive substring checks; `runEvaluation` evaluates the suite and records a timestamp. `passRate` computes a percentage from results. The seed history is illustrative and relative to the current date.
 5. `src/styles.css` contains the responsive layout, cards, colors, and component styles.
