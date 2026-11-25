@@ -13,7 +13,7 @@ This project is a React single-page application built with Vite. There is no ser
 
 ## Data flow
 
-Clicking **Run evaluation** calls `runEvaluation`, appends the result to React state, and attempts to save the history in localStorage. The overview, chart, and test table derive their values from that history. If storage is unavailable, the current session still works and a notice appears. **Reset demo** replaces history with sample runs. The feedback list is independent static demo data.
+Clicking **Run evaluation** calls `runEvaluation`, appends the result to React state, and attempts to save the history in localStorage. The overview, chart, and test table derive their values from that history. If storage is unavailable, the current session still works and a notice appears. **Reset demo** replaces history with sample runs. Feedback can show static demo data or manually imported records. `src/feedbackImport.js` validates the versioned JSON format and reloads the browser-local import. The two sources are not merged. See `FEEDBACK_IMPORT.md` for the format and limitations.
 
 ## Connecting a real agent
 

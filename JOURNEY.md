@@ -12,3 +12,9 @@
 
 - Added a dark-mode button to the top bar, with a browser-local preference and a light-mode return action.
 - Applied the theme to navigation, charts, feedback, filters, and the test detail dialog.
+
+## 2026-11-25 — Feedback import foundation
+
+- Inspected AuraDesk: feedback is held only in React session state; no export or API exists in the inspected version.
+- Added a validated, versioned JSON import, separate demo/imported views, linked prompt and response details, browser-local persistence, and removal.
+- Documented the manual preparation steps and privacy limitations in `FEEDBACK_IMPORT.md`. A real AuraDesk export remains a separate integration step.

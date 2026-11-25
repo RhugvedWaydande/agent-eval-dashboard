@@ -17,7 +17,7 @@ Open the URL printed by Vite. No API key, backend, or account is required. Run `
 
 - **Run evaluation** checks eight local sample agent responses against case-insensitive required phrases. A case passes only if every phrase is present. This is a simple deterministic baseline, not a semantic or safety guarantee.
 - The latest results power the summary and test table. Run history is stored in this browser's localStorage; reset it with **Reset demo**. Historical runs are illustrative fixtures, not actual past executions.
-- Feedback is illustrative sample data inspired by AuraDesk's thumbs-up/down flow. It is not connected to AuraDesk and does not represent real users. Response times are fixture values, not measured latency.
+- Feedback defaults to illustrative sample data. You can manually import consented feedback as JSON; see [FEEDBACK_IMPORT.md](FEEDBACK_IMPORT.md). There is no live AuraDesk connection or automatic export. Response times are fixture values, not measured latency.
 - Test details show the prompt, sample response, and individual phrase checks. For seeded historical runs these current checks may differ from the illustrative historical status.
 
 See [CODE_TOUR.md](CODE_TOUR.md) for the architecture and extension points, and [JOURNEY.md](JOURNEY.md) for the development log.
